@@ -117,26 +117,27 @@ debug：当此属性设置为true时，将打印出logback内部日志信息，�
         </filter>
     </appender>
 
-<!--    &lt;!&ndash;-->
-<!--        logger主要用于存放日志对象，也可以定义日志类型、级别-->
-<!--        name：表示匹配的logger类型前缀，也就是包的前半部分-->
-<!--        level：要记录的日志级别，包括 TRACE < DEBUG < INFO < WARN < ERROR-->
-<!--        additivity：作用在于children-logger是否使用 rootLogger配置的appender进行输出，-->
-<!--        false：表示只用当前logger的appender-ref，true：-->
-<!--        表示当前logger的appender-ref和rootLogger的appender-ref都有效-->
-<!--    &ndash;&gt;-->
-<!--    &lt;!&ndash; hibernate logger &ndash;&gt;-->
-<!--    <logger name="sxx.xwl.community.community" level="debug"/>-->
-<!--    &lt;!&ndash; Spring framework logger &ndash;&gt;-->
-<!--    <logger name="org.springframework" level="debug" additivity="false"></logger>-->
+    <!--  打印至控制台  -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d %level {%thread} %logger{10} {%file:%line} %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>debug</level>
+        </filter>
+    </appender>
 
-
-<!--    &lt;!&ndash;-->
-<!--    root与logger是父子关系，没有特别定义则默认为root，任何一个类只会和一个logger对应，-->
-<!--    要么是定义的logger，要么是root，判断的关键在于找到这个logger，然后判断这个logger的appender和level。-->
-<!--    &ndash;&gt;-->
-<!--    <root level="info">-->
-<!--        <appender-ref ref="stdout"/>-->
-<!--        <appender-ref ref="appLogAppender"/>-->
-<!--    </root>-->
+    <logger name="sxx.xwl.community.community" level="debug"/>
+    <!--
+    root与logger是父子关系，没有特别定义则默认为root，任何一个类只会和一个logger对应，
+    要么是定义的logger，要么是root，判断的关键在于找到这个logger，然后判断这个logger的appender和level。
+    -->
+    <root level="info">
+        <appender-ref ref="DEBUG_FILE"/>
+        <appender-ref ref="INFO_FILE"/>
+        <appender-ref ref="WARN_FILE"/>
+        <appender-ref ref="ERROR_FILE"/>
+        <appender-ref ref="STDOUT"/>
+    </root>
 </configuration>
