@@ -12,6 +12,18 @@ spring:
       maximum-pool-size: 15
       minimum-idle: 5
       idle-timeout: 30000
+    # MailProperties
+  mail:
+    username: 1905921852@qq.com
+    password: fzmvcuhogmejejjg
+    host: smtp.qq.com
+    protocol: smtps
+    #开启加密验证
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable: true
 
 # MybatisProperties
 mybatis:

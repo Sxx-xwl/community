@@ -1,4 +1,4 @@
-package sxx.xwl.community.community.mapper;
+package sxx.xwl.community.community;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
