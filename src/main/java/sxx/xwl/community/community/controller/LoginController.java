@@ -8,17 +8,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 import sxx.xwl.community.community.entity.User;
 import sxx.xwl.community.community.service.UserService;
 import sxx.xwl.community.community.util.CommunityConstant;
+import sxx.xwl.community.community.util.CommunityUtil;
+import sxx.xwl.community.community.util.HostHolder;
+import sxx.xwl.community.community.util.MailClient;
 
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
@@ -43,6 +46,13 @@ public class LoginController implements CommunityConstant {
 
     @Value("${server.servlet.context-path}")
     private String contextPath;
+
+    @Autowired
+    private TemplateEngine templateEngine;
+
+    @Autowired
+    private MailClient mailClient;
+
 
     /**
      * 跳转到注册页
@@ -145,8 +155,62 @@ public class LoginController implements CommunityConstant {
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public String logout(@CookieValue("ticket")String ticket){
+    public String logout(@CookieValue("ticket") String ticket) {
         userService.logout(ticket);
         return "redirect:/login";
+    }
+
+    @RequestMapping(value = "/forget", method = RequestMethod.GET)
+    public String forget() {
+        return "/site/forget";
+    }
+
+    @RequestMapping(value = "/getCode", method = RequestMethod.GET)
+    @ResponseBody
+    public String getCode(String email, Model model, HttpSession session) {
+        //发送重置邮件
+        if (StringUtils.isBlank(email)) {
+            model.addAttribute("emailMsg", "邮箱不能为空！");
+            return "/site/forget";
+        }
+        User user = userService.selectByEmail(email);
+        if (user == null) {
+            model.addAttribute("emailMsg", "该邮箱未被注册！");
+            return "/site/forget";
+        }
+
+        // 发送邮件
+        Context context = new Context();
+        context.setVariable("email", email);
+        String code = CommunityUtil.generateUUID().substring(0, 5);
+        context.setVariable("code", code);
+        String content = templateEngine.process("/mail/forget", context);
+        mailClient.sendMail(email, "找回密码", content);
+
+        // 保存验证码
+        session.setAttribute("verifyCode", code);
+        return CommunityUtil.getJSONString(0);
+    }
+
+    @RequestMapping(value = "/reset", method = RequestMethod.POST)
+    public String reset(String email, HttpServletRequest request, String code, Model model, String password) {
+
+        String context = request.getParameter("context");
+        if (StringUtils.isBlank(code)) {
+            model.addAttribute("codeMsg", "请填写验证码！");
+            return "/site/forget";
+        }
+        if (!code.equals(context)) {
+            model.addAttribute("codeMsg", "验证码输入错误！");
+            return "/site/forget";
+        }
+        User user = userService.selectByEmail(email);
+        Map<String, Object> map = userService.updatePassword(user, password);
+        if (map != null){
+            model.addAttribute("passwordMsg", map.get("newPassword1Msg"));
+            return "/site/forget";
+        }else {
+            return "/site/login";
+        }
     }
 }

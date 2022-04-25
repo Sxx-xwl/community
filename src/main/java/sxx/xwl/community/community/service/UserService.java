@@ -46,6 +46,10 @@ public class UserService implements CommunityConstant {
         return userMapper.selectById(id);
     }
 
+    public User selectByEmail(String email){
+        return userMapper.selectByEmail(email);
+    }
+
     //处理注册
     public Map<String, Object> register(User user) throws Exception {
         Map<String, Object> map = new HashMap<>();
@@ -172,7 +176,19 @@ public class UserService implements CommunityConstant {
     }
 
     //修改用户密码
-    public int updatePassword(User user, String newPassword){
-        return userMapper.updatePassword(user.getId(), newPassword);
+    public Map<String, Object> updatePassword(User user, String newPassword){
+        Map<String, Object> map = new HashMap<>();
+        int length = newPassword.length();
+        if (newPassword.replaceAll(" ", "").length() != length) {
+            map.put("newPassword1Msg", "新密码不能包含空格！");
+            return map;
+        } else if (length < 8) {
+            map.put("newPassword1Msg", "新密码长度不可小于8！");
+            return map;
+        }
+
+        userMapper.updatePassword(user.getId(), newPassword);
+        return map;
     }
+
 }
