@@ -119,30 +119,27 @@ public class UserService implements CommunityConstant {
         Map<String, Object> map = new HashMap<>();
 
         //空值处理
-        if (StringUtils.isBlank(username)){
+        if (StringUtils.isBlank(username)) {
             map.put("usernameMsg", "账号不能为空！");
             return map;
         }
-        if (StringUtils.isBlank(password)){
+        if (StringUtils.isBlank(password)) {
             map.put("passwordMsg", "密码不能为空！");
             return map;
         }
 
         //验证账号
         User user = userMapper.selectByName(username);
-        if (user==null)
-        {
+        if (user == null) {
             map.put("usernameMsg", "账号不存在！");
             return map;
         }
-        if (user.getStatus()==0)
-        {
+        if (user.getStatus() == 0) {
             map.put("usernameMsg", "账号未激活！");
             return map;
         }
         password = CommunityUtil.md5(password + user.getSalt());
-        if (!user.getPassword().equals(password))
-        {
+        if (!user.getPassword().equals(password)) {
             map.put("passwordMsg", "密码不正确！");
             return map;
         }
@@ -160,12 +157,22 @@ public class UserService implements CommunityConstant {
     }
 
     //处理注销
-    public void logout(String ticket){
+    public void logout(String ticket) {
         loginTicketMapper.updateStatus(ticket, 1);
     }
 
     //查询凭证
-    public LoginTicket findLoginTicket(String ticket){
+    public LoginTicket findLoginTicket(String ticket) {
         return loginTicketMapper.selectByticket(ticket);
+    }
+
+    //更新头像路径
+    public int updateHeader(int userId, String headerUrl) {
+        return userMapper.updateHeader(userId, headerUrl);
+    }
+
+    //修改用户密码
+    public int updatePassword(User user, String newPassword){
+        return userMapper.updatePassword(user.getId(), newPassword);
     }
 }
