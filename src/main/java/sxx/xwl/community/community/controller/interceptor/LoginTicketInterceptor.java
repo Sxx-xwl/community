@@ -45,7 +45,7 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
                 hostHolder.setUser(user);
             }
         }
-        System.out.println('1');
+        System.out.println("preHandle拦截器生效");
         return true;
     }
 
@@ -56,13 +56,13 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
         if (user != null && modelAndView != null) {
             modelAndView.addObject("loginUser", user);
         }
-        System.out.println('2');
+        System.out.println("postHandle拦截器生效");
     }
 
     //请求结束后执行
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         hostHolder.clear();
-        System.out.println('3');
+        System.out.println("afterCompletion拦截器生效");
     }
 }

@@ -3,8 +3,10 @@ package sxx.xwl.community.community.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import sxx.xwl.community.community.service.AlphaService;
+import sxx.xwl.community.community.util.CommunityUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -61,4 +63,14 @@ public class AlphaController {
 
         return;
     }
+
+    //ajax示例
+    @RequestMapping(value = "/ajax",method = RequestMethod.POST)
+    @ResponseBody
+    public String testAjax(String name , int age){
+        System.out.println(name);
+        System.out.println(age);
+        return CommunityUtil.getJSONString(0,"ok!");
+    }
+
 }
