@@ -7,14 +7,18 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import sxx.xwl.community.community.entity.Comment;
 import sxx.xwl.community.community.entity.DiscussPost;
+import sxx.xwl.community.community.entity.Page;
 import sxx.xwl.community.community.entity.User;
+import sxx.xwl.community.community.service.CommentService;
 import sxx.xwl.community.community.service.DiscussPostService;
 import sxx.xwl.community.community.service.UserService;
+import sxx.xwl.community.community.util.CommunityConstant;
 import sxx.xwl.community.community.util.CommunityUtil;
 import sxx.xwl.community.community.util.HostHolder;
 
-import java.util.Date;
+import java.util.*;
 
 /**
  * @author sxx_27
@@ -22,7 +26,7 @@ import java.util.Date;
  */
 @Controller
 @RequestMapping("/discuss")
-public class DiscussPostController {
+public class DiscussPostController implements CommunityConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
@@ -32,6 +36,9 @@ public class DiscussPostController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private CommentService commentService;
 
     @ResponseBody
     @RequestMapping(value = "/add", method = RequestMethod.POST)
@@ -51,13 +58,63 @@ public class DiscussPostController {
     }
 
     @RequestMapping(value = "/detail/{discussPostId}", method = RequestMethod.GET)
-    public String getDiscussPost(@PathVariable("discussPostId") int discussPostId, Model model) {
+    public String getDiscussPost(@PathVariable("discussPostId") int discussPostId, Model model, Page page) {
         //帖子
         DiscussPost Post = discussPostService.findDiscussPostById(discussPostId);
         model.addAttribute("post", Post);
         //作者
         User user = userService.findUserById(Post.getUserId());
         model.addAttribute("user", user);
+
+        //评论分页信息
+        page.setLimit(5);
+        page.setPath("/discuss/detail/" + discussPostId);
+        page.setRows(Post.getCommentCount());
+
+        //分页查询
+        //评论列表
+        List<Comment> comments = commentService.findCommentsByEntity(ENTITY_TYPE_POST, Post.getId(), page.getOffset(), page.getLimit());
+        //评论显示对象的列表
+        List<Map<String, Object>> commentVoList = new ArrayList<>();
+        if (comments != null) {
+            for (Comment comment : comments) {
+                //单个评论的内容
+                Map<String, Object> map = new HashMap<>();
+                //评论
+                map.put("comment", comment);
+                //评论的主人
+                map.put("user", userService.findUserById(comment.getUserId()));
+
+                //回复列表
+                List<Comment> subComments = commentService.findCommentsByEntity(ENTITY_TYPE_COMMENT, comment.getId(), 0, Integer.MAX_VALUE);
+                //回复显示对象的列表
+                List<Map<String,Object>> subCommentVoList = new ArrayList<>();
+                if (subComments!=null){
+                    for (Comment subComment : subComments){
+                        //单个回复内容
+                        Map<String, Object> subMap = new HashMap<>();
+                        //回复
+                        subMap.put("subComment",subComment);
+                        //回复的作者
+                        subMap.put("user", userService.findUserById(subComment.getUserId()));
+                        //回复的目标
+                        User target = subComment.getTargetId() == 0 ? null : userService.findUserById(subComment.getTargetId());
+                        subMap.put("target",target);
+
+                        //添加到回复显示对象列表
+                        subCommentVoList.add(subMap);
+                    }
+                }
+                map.put("replys", subCommentVoList);
+                //回复数
+                int commentCount = commentService.findCommentCount(ENTITY_TYPE_COMMENT, comment.getId());
+                map.put("commentCount",commentCount);
+                //添加到显示对象列表
+                commentVoList.add(map);
+            }
+        }
+        model.addAttribute("comments", commentVoList);
+
         return "/site/discuss-detail";
     }
 }
