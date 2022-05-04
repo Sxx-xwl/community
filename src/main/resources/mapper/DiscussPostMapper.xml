@@ -17,6 +17,13 @@
         values(#{userId},#{title},#{content},#{type},#{status},#{createTime},#{commentCount},#{score})
     </insert>
 
+    <!--    int updateCommentCount(int id, int commentCount);-->
+    <update id="updateCommentCount">
+        update discuss_post
+        set comment_count = #{commentCount}
+        where id = #{id}
+    </update>
+
     <!--    List<DiscussPost> selectDiscussPosts(int userId, int offset, int limit);-->
     <select id="selectDiscussPosts" resultType="discussPost">
         select
