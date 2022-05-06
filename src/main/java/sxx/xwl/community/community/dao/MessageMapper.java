@@ -27,4 +27,10 @@ public interface MessageMapper {
     //查询未读私信的数量
     int selectLetterUnreadCount(int userId, String conversationId);
 
+    //发送私信
+    int insertMessage(Message message);
+
+    //更改消息状态
+    int updateStatus(List<Integer> ids, int status);
+
 }

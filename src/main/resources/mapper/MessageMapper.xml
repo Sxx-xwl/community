@@ -12,6 +12,23 @@
         from_id,to_id,conversation_id,content,status,create_time
     </sql>
 
+    <!--    //发送私信-->
+    <!--    int insertMessage(Message message);-->
+    <insert id="insertMessage" parameterType="message" keyProperty="id">
+        insert into message (<include refid="insertFields"></include>)
+        values (#{fromId},#{toId},#{conversationId},#{content},#{status},#{createTime})
+    </insert>
+
+    <!--    //更改消息状态-->
+    <!--    int updateStatus(List<Integer> ids, int status);-->
+    <update id="updateStatus">
+        update message set status = #{status}
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
     <!--    //查询当前用户的会话列表，每个回话返回最新的私信-->
     <!--    List<Message> selectConversations(int userId, int offset, int limit);-->
     <select id="selectConversations" resultType="message">
