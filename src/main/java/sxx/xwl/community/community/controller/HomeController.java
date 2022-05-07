@@ -30,7 +30,7 @@ public class HomeController {
     private UserService userService;
 
     @RequestMapping(value = "/index", method = RequestMethod.GET)
-    public String getIndexPage(Model model , Page page) {
+    public String getIndexPage(Model model, Page page) {
         page.setRows(discussPostService.findDiscussPostsRows(0));
         page.setPath("/index");
 
@@ -52,5 +52,9 @@ public class HomeController {
         return "/index";
     }
 
+    @RequestMapping(value = "/error", method = RequestMethod.GET)
+    public String getErrorPage() {
+        return "/error/500";
+    }
 
 }
