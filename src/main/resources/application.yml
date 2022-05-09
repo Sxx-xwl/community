@@ -24,6 +24,12 @@ spring:
         smtp:
           ssl:
             enable: true
+#redisProperties
+  redis:
+    database: 11
+    host: localhost
+    port: 6379
+
 
 # MybatisProperties
 mybatis:
