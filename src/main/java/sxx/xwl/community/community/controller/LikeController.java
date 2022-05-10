@@ -1,0 +1,48 @@
+package sxx.xwl.community.community.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import sxx.xwl.community.community.entity.User;
+import sxx.xwl.community.community.service.LikeService;
+import sxx.xwl.community.community.util.CommunityUtil;
+import sxx.xwl.community.community.util.HostHolder;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * @author sxx_27
+ * @create 2022-05-10 16:22
+ */
+@Controller
+public class LikeController {
+
+    @Autowired
+    private LikeService likeService;
+
+    @Autowired
+    private HostHolder hostHolder;
+
+    @RequestMapping(value = "/like", method = RequestMethod.POST)
+    @ResponseBody
+    public String like(int entityType, int entityId) {
+        User user = hostHolder.getUser();
+        //点赞
+        likeService.like(user.getId(), entityType, entityId);
+        //数量
+        long likeCount = likeService.findEntityLikeCount(entityType, entityId);
+        //状态
+        int likeStatus = likeService.findEntityLikeStatus(user.getId(), entityType, entityId);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("likeCount", likeCount);
+        map.put("likeStatus", likeStatus);
+
+        return CommunityUtil.getJSONString(0, null, map);
+
+    }
+
+}

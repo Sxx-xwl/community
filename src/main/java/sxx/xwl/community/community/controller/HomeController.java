@@ -9,7 +9,9 @@ import sxx.xwl.community.community.entity.DiscussPost;
 import sxx.xwl.community.community.entity.Page;
 import sxx.xwl.community.community.entity.User;
 import sxx.xwl.community.community.service.DiscussPostService;
+import sxx.xwl.community.community.service.LikeService;
 import sxx.xwl.community.community.service.UserService;
+import sxx.xwl.community.community.util.CommunityConstant;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,13 +23,16 @@ import java.util.Map;
  * @create 2022-04-20 20:45
  */
 @Controller
-public class HomeController {
+public class HomeController implements CommunityConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LikeService likeService;
 
     @RequestMapping(value = "/index", method = RequestMethod.GET)
     public String getIndexPage(Model model, Page page) {
@@ -44,6 +49,10 @@ public class HomeController {
                 map.put("post", post);
                 User user = userService.findUserById(post.getUserId());
                 map.put("user", user);
+
+                long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST, post.getId());
+                map.put("likeCount", likeCount);
+
                 discussPosts.add(map);
             }
         }
