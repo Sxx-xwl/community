@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
 import sxx.xwl.community.community.annotation.LoginRequired;
 import sxx.xwl.community.community.entity.User;
+import sxx.xwl.community.community.service.LikeService;
 import sxx.xwl.community.community.service.UserService;
 import sxx.xwl.community.community.util.CommunityUtil;
 import sxx.xwl.community.community.util.HostHolder;
@@ -48,6 +49,9 @@ public class UserController {
 
     @Autowired
     private HostHolder hostHolder;
+
+    @Autowired
+    private LikeService likeService;
 
     @LoginRequired
     @RequestMapping(value = "/setting", method = RequestMethod.GET)
@@ -147,6 +151,20 @@ public class UserController {
         newPassword1 = CommunityUtil.md5(newPassword1 + salt);
         userService.updatePassword(user, newPassword1);
         return "redirect:/index";
+    }
+
+    @RequestMapping(value = "/profile/{userId}",method = RequestMethod.GET)
+    public String getProfile(@PathVariable("userId") int userId, Model model){
+        User user = userService.findUserById(userId);
+        if (user==null){
+            throw new RuntimeException("该用户不存在！");
+        }
+
+        model.addAttribute("user", user);
+        //点赞数量
+        int likeCount = likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount", likeCount);
+        return "/site/profile";
     }
 
 }
