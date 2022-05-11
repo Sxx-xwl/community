@@ -13,8 +13,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.multipart.MultipartFile;
 import sxx.xwl.community.community.annotation.LoginRequired;
 import sxx.xwl.community.community.entity.User;
+import sxx.xwl.community.community.service.FollowService;
 import sxx.xwl.community.community.service.LikeService;
 import sxx.xwl.community.community.service.UserService;
+import sxx.xwl.community.community.util.CommunityConstant;
 import sxx.xwl.community.community.util.CommunityUtil;
 import sxx.xwl.community.community.util.HostHolder;
 
@@ -31,7 +33,7 @@ import java.io.OutputStream;
  */
 @Controller
 @RequestMapping("/user")
-public class UserController {
+public class UserController implements CommunityConstant {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UserController.class);
 
@@ -52,6 +54,9 @@ public class UserController {
 
     @Autowired
     private LikeService likeService;
+
+    @Autowired
+    private FollowService followService;
 
     @LoginRequired
     @RequestMapping(value = "/setting", method = RequestMethod.GET)
@@ -153,10 +158,11 @@ public class UserController {
         return "redirect:/index";
     }
 
-    @RequestMapping(value = "/profile/{userId}",method = RequestMethod.GET)
-    public String getProfile(@PathVariable("userId") int userId, Model model){
+    //个人主页
+    @RequestMapping(value = "/profile/{userId}", method = RequestMethod.GET)
+    public String getProfile(@PathVariable("userId") int userId, Model model) {
         User user = userService.findUserById(userId);
-        if (user==null){
+        if (user == null) {
             throw new RuntimeException("该用户不存在！");
         }
 
@@ -164,7 +170,22 @@ public class UserController {
         //点赞数量
         int likeCount = likeService.findUserLikeCount(userId);
         model.addAttribute("likeCount", likeCount);
+
+        //关注数量
+        long followeeCount = followService.findFolloweeCount(userId, ENTITY_TYPE_USER);
+        model.addAttribute("followeeCount", followeeCount);
+        //粉丝数
+        long followerCount = followService.findFollowerCount(ENTITY_TYPE_USER, userId);
+        model.addAttribute("followerCount", followerCount);
+        //是否关注
+        boolean hasFollowed = false;
+        if (hostHolder.getUser() != null) {
+            hasFollowed = followService.hasFollowed(hostHolder.getUser().getId(), ENTITY_TYPE_USER, userId);
+        }
+        model.addAttribute("hasFollowed",hasFollowed);
+
         return "/site/profile";
     }
+
 
 }
