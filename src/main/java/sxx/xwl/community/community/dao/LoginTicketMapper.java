@@ -10,6 +10,7 @@ import sxx.xwl.community.community.entity.LoginTicket;
  * @create 2022-04-23 20:42
  */
 @Mapper
+@Deprecated
 public interface LoginTicketMapper {
 
     //插入一个凭证
