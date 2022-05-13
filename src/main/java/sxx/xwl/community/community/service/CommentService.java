@@ -34,13 +34,18 @@ public class CommentService implements CommunityConstant {
         return commentMapper.selectCommentsByEntity(entityType, entityId, offset, limit);
     }
 
+    public Comment findCommentsById(int id) {
+        return commentMapper.selectCommentById(id);
+    }
+
     public int findCommentCount(int entityType, int entityId) {
         return commentMapper.selectCountByEntity(entityType, entityId);
     }
 
-    @Transactional(isolation = Isolation.READ_COMMITTED,propagation = Propagation.REQUIRED)
-    public int insertComment(Comment comment){
-        if (comment == null){
+
+    @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRED)
+    public int insertComment(Comment comment) {
+        if (comment == null) {
             throw new IllegalArgumentException("comment参数不能为空！");
         }
 
@@ -50,7 +55,7 @@ public class CommentService implements CommunityConstant {
         int rows = commentMapper.insertComment(comment);
 
         //更新帖子评论数量
-        if (comment.getEntityType()==ENTITY_TYPE_POST){
+        if (comment.getEntityType() == ENTITY_TYPE_POST) {
             int count = commentMapper.selectCountByEntity(ENTITY_TYPE_POST, comment.getEntityId());
             int res = discussPostService.updateCommentCount(comment.getEntityId(), count);
         }

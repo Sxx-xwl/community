@@ -36,6 +36,9 @@ public class ServiceLogAspect {
     public void before(JoinPoint joinpoint) {
         //用户[1.2.3.4]，在[***]，访问了[sxx.xwl.community.community.service.*.xxx()]
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null){
+            return;
+        }
         HttpServletRequest request = attributes.getRequest();
         //获得用户ip
         String ip = request.getRemoteHost();
