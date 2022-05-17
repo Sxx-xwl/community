@@ -7,8 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import sxx.xwl.community.community.entity.DiscussPost;
 import sxx.xwl.community.community.entity.Event;
 import sxx.xwl.community.community.entity.Message;
+import sxx.xwl.community.community.service.DiscussPostService;
+import sxx.xwl.community.community.service.ESService;
 import sxx.xwl.community.community.service.MessageService;
 import sxx.xwl.community.community.util.CommunityConstant;
 import sxx.xwl.community.community.util.HostHolder;
@@ -30,8 +33,12 @@ public class EventConsumer implements CommunityConstant {
     private MessageService messageService;
 
     @Autowired
-    private HostHolder hostHolder;
+    private DiscussPostService discussPostService;
 
+    @Autowired
+    private ESService esService;
+
+    //点赞、评论、关注事件
     @KafkaListener(topics = {TOPIC_LIKE, TOPIC_FOLLOW, TOPIC_COMMENT})
     public void handleCommentMessage(ConsumerRecord record) {
         if (record == null || record.value() == null) {
@@ -65,5 +72,22 @@ public class EventConsumer implements CommunityConstant {
 
         message.setContent(JSONObject.toJSONString(content));
         messageService.addMessage(message);
+    }
+
+    //发帖事件
+    @KafkaListener(topics = {TOPIC_PUBLISH})
+    public void handlePublishMessage(ConsumerRecord record){
+        if (record == null || record.value() == null) {
+            LOGGER.error("消息内容为空！");
+            return;
+        }
+
+        Event event = JSONObject.parseObject(record.value().toString(), Event.class);
+        if (event == null) {
+            LOGGER.error("消息格式错误！");
+            return;
+        }
+        DiscussPost post = discussPostService.findDiscussPostById(event.getEntityId());
+        esService.saveDiscussPost(post);
     }
 }

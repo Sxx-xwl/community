@@ -136,6 +136,8 @@ public class ElasticsearchTest {
 
         System.out.println(JSONObject.toJSON(searchResponse));
 
+//        System.out.println("一共有："+ searchResponse.getHits().getTotalHits().value);
+
         List<DiscussPost> list = new LinkedList<>();
         for (SearchHit hit : searchResponse.getHits().getHits()){
             DiscussPost post = JSONObject.parseObject(hit.getSourceAsString(), DiscussPost.class);

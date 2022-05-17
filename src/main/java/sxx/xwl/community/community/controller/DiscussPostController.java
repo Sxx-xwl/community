@@ -7,10 +7,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import sxx.xwl.community.community.entity.Comment;
-import sxx.xwl.community.community.entity.DiscussPost;
-import sxx.xwl.community.community.entity.Page;
-import sxx.xwl.community.community.entity.User;
+import sxx.xwl.community.community.entity.*;
+import sxx.xwl.community.community.event.EventProducer;
 import sxx.xwl.community.community.service.CommentService;
 import sxx.xwl.community.community.service.DiscussPostService;
 import sxx.xwl.community.community.service.LikeService;
@@ -44,6 +42,9 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private LikeService likeService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     @ResponseBody
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public String addDiscussPost(String title, String content) {
@@ -57,6 +58,14 @@ public class DiscussPostController implements CommunityConstant {
         post.setUserId(user.getId());
         post.setCreateTime(new Date());
         discussPostService.addDiscussPost(post);
+        //触发发帖事件
+        Event event = new Event()
+                .setTopic(TOPIC_PUBLISH)
+                .setUserId(user.getId())
+                .setEntityType(ENTITY_TYPE_POST)
+                .setEntityId(post.getId());
+        eventProducer.fireEvent(event);
+
         //报错统一处理！
         return CommunityUtil.getJSONString(0, "success!");
     }
