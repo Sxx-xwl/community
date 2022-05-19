@@ -1,6 +1,10 @@
 package sxx.xwl.community.community.controller.interceptor;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -43,9 +47,14 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
                 User user = userService.findUserById(loginTicket.getUserId());
                 //将用户信息存入
                 hostHolder.setUser(user);
+                //构建用户认证的结果，并存入SecurityContext 以便于Security进行授权
+                Authentication authentication = new UsernamePasswordAuthenticationToken(
+                        user, user.getPassword(), userService.getAuthorities(user.getId()));
+                //为security设置权限
+                SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
             }
         }
-        System.out.println("preHandle拦截器生效");
+        System.out.println("preLoginTicketInterceptor拦截器生效");
         return true;
     }
 
@@ -56,13 +65,13 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
         if (user != null && modelAndView != null) {
             modelAndView.addObject("loginUser", user);
         }
-        System.out.println("postHandle拦截器生效");
+        System.out.println("postLoginTicketInterceptor拦截器生效");
     }
 
     //请求结束后执行
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         hostHolder.clear();
-        System.out.println("afterCompletion拦截器生效");
+        System.out.println("afterLoginTicketInterceptor拦截器生效");
     }
 }

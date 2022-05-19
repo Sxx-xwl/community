@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -115,6 +116,7 @@ public class LoginController implements CommunityConstant {
 
     /**
      * 获取验证码
+     *
      * @param response
      * @author sxx
      * <br>CreateDate 2022-05-12 13:27
@@ -139,7 +141,7 @@ public class LoginController implements CommunityConstant {
 
         //将验证码存入redis
         String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
-        redisTemplate.opsForValue().set(redisKey, text,60, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(redisKey, text, 60, TimeUnit.SECONDS);
 
         //将得到的图片输出给浏览器
         response.setContentType("image/png");
@@ -154,12 +156,12 @@ public class LoginController implements CommunityConstant {
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String login(Model model, String username, String password, String code,
                         boolean remember/*, HttpSession session*/, HttpServletResponse response,
-                        @CookieValue("kaptchaOwner")String kaptchaOwner) {
+                        @CookieValue("kaptchaOwner") String kaptchaOwner) {
         //检查验证码
 //        String kaptcha = (String) session.getAttribute("kaptcha");
 
         String kaptcha = null;
-        if (!StringUtils.isBlank(kaptchaOwner)){
+        if (!StringUtils.isBlank(kaptchaOwner)) {
             String redisKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
             kaptcha = (String) redisTemplate.opsForValue().get(redisKey);
         }
@@ -187,6 +189,7 @@ public class LoginController implements CommunityConstant {
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public String logout(@CookieValue("ticket") String ticket) {
         userService.logout(ticket);
+        SecurityContextHolder.clearContext();
         return "redirect:/login";
     }
 
@@ -236,10 +239,10 @@ public class LoginController implements CommunityConstant {
         }
         User user = userService.selectByEmail(email);
         Map<String, Object> map = userService.updatePassword(user, password);
-        if (map != null){
+        if (map != null) {
             model.addAttribute("passwordMsg", map.get("newPassword1Msg"));
             return "/site/forget";
-        }else {
+        } else {
             return "/site/login";
         }
     }
