@@ -31,8 +31,10 @@ public interface CommunityConstant {
     String TOPIC_LIKE = "like";
     //主题：关注
     String TOPIC_FOLLOW = "follow";
-    //主题：关注
+    //主题：发帖
     String TOPIC_PUBLISH = "publish";
+    //主题：删帖
+    String TOPIC_DELETE = "delete";
 
     //系统用户id
     int SYSTEM_ID = 1;
