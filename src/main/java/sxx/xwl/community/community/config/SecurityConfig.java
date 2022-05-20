@@ -64,7 +64,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter implements Comm
                 )
                 //需要有权限才可以访问的路径
                 .antMatchers(
-                        "/discuss/delete"
+                        "/discuss/delete",
+                        "/data/**"
                 )
                 //具备以下权限才可以访问
                 .hasAnyAuthority(
