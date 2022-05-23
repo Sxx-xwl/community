@@ -1,6 +1,7 @@
 package sxx.xwl.community.community.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -12,6 +13,7 @@ import sxx.xwl.community.community.service.LikeService;
 import sxx.xwl.community.community.util.CommunityConstant;
 import sxx.xwl.community.community.util.CommunityUtil;
 import sxx.xwl.community.community.util.HostHolder;
+import sxx.xwl.community.community.util.RedisKeyUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +33,9 @@ public class LikeController implements CommunityConstant {
 
     @Autowired
     private EventProducer eventProducer;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @RequestMapping(value = "/like", method = RequestMethod.POST)
     @ResponseBody
@@ -58,6 +63,12 @@ public class LikeController implements CommunityConstant {
                     .setData("postId", postId);
 
             eventProducer.fireEvent(event);
+        }
+
+        if (entityType == ENTITY_TYPE_POST){
+            //计算帖子分数
+            String redisKey = RedisKeyUtil.getPostScoreKey();
+            redisTemplate.opsForSet().add(redisKey, postId);
         }
 
         return CommunityUtil.getJSONString(0, null, map);

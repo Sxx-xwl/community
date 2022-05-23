@@ -1,6 +1,7 @@
 package sxx.xwl.community.community.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +17,7 @@ import sxx.xwl.community.community.service.UserService;
 import sxx.xwl.community.community.util.CommunityConstant;
 import sxx.xwl.community.community.util.CommunityUtil;
 import sxx.xwl.community.community.util.HostHolder;
+import sxx.xwl.community.community.util.RedisKeyUtil;
 
 import java.util.*;
 
@@ -45,6 +47,9 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private EventProducer eventProducer;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     @ResponseBody
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public String addDiscussPost(String title, String content) {
@@ -65,6 +70,10 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityType(ENTITY_TYPE_POST)
                 .setEntityId(post.getId());
         eventProducer.fireEvent(event);
+
+        //计算帖子分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey, post.getId());
 
         //报错统一处理！
         return CommunityUtil.getJSONString(0, "success!");
@@ -176,6 +185,10 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityType(ENTITY_TYPE_POST)
                 .setEntityId(id);
         eventProducer.fireEvent(event);
+
+        //计算帖子分数
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey, id);
 
         return CommunityUtil.getJSONString(0);
     }

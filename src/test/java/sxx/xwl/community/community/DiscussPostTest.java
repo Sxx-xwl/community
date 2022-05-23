@@ -24,7 +24,7 @@ public class DiscussPostTest {
 
     @Test
     public void test(){
-        List<DiscussPost> discussPosts = discussPostMapper.selectDiscussPosts(0, 0, 10);
+        List<DiscussPost> discussPosts = discussPostMapper.selectDiscussPosts(0, 0, 10,0);
         discussPosts.forEach(System.out::println);
 
         int i = discussPostMapper.selectDiscussPostsRows(0);
